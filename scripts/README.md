@@ -26,8 +26,8 @@ This repository contains R Markdown analyses of microbiome data collected via su
   - One for ddPCR (`UFT_m²`)
 - Groups data by `room_id` and `location`
 - Saves heatmaps to:
-  - `products/combined_rym_heatmap_plot.png`
-  - `products/combined_ddpcr_heatmap_plot.png`
+  - `figures/combined_rym_heatmap_plot.png`
+  - `figures/combined_ddpcr_heatmap_plot.png`
 
 ### 🔹 `timepoint_ddpcr_wilcox.Rmd`
 - Performs a **paired Wilcoxon test** comparing **pre- and post- ddPCR values**.
