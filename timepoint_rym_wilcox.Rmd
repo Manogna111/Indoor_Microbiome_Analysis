@@ -1,0 +1,262 @@
+---
+title: "Comparing the  T1  &  T2 RYM Data"
+author: "Manogna"
+date: "2024-07-11"
+output: html_document
+---
+
+
+```{r}
+#Load Libraries
+ 
+library(tidyverse)
+
+#load_data
+
+swab_data = read_csv("../data/raw_data/swab_data_sheet.csv")
+```
+
+```{r}
+swab_data_clean = 
+  swab_data %>%
+    mutate(petrifilm_sum = petrifilm_blue + petrifilm_other) %>%
+    mutate(petrifilm_sum_imputed = case_when(petrifilm_sum < 10 ~ 5, 
+                                         TRUE ~ petrifilm_sum)) %>%
+    mutate(petrifilm_sum_imputed = case_when(petrifilm_sum_imputed >= 1000 ~ 1000,
+                                     TRUE ~ petrifilm_sum_imputed)) %>%
+    mutate(cfu_per_swab = petrifilm_sum_imputed*3)
+write_csv(swab_data_clean, "../data/processed_data/swab_data_clean.csv")
+```
+
+```{r}
+#data of swabs near start of aerosol experiments
+petrifilm_data_pre =
+  swab_data_clean %>%
+  filter(!(samp_id %in% paste0("s",13:20))) %>%
+  filter(!(room_id %in% paste0("r3"))) %>%
+  group_by(room_id) %>%
+  select(room_id,cfu_per_swab,location) %>%
+  drop_na() %>%
+  mutate(time = "t1" )
+
+
+#data of swabs near end of aerosol experiments
+petrifilm_data_post =
+ swab_data_clean %>%
+  filter(!(samp_id %in% paste0("s",1:8))) %>%
+  filter(!(room_id %in% paste0("r3"))) %>%
+  select(room_id,cfu_per_swab,location) %>%
+  drop_na() %>%
+  mutate(time = "t2" )
+
+
+#create a new table with only pre & post average values
+combined_petrifilm_timepoint <- bind_rows(petrifilm_data_pre, petrifilm_data_post)
+
+#pivot longer
+combined_petrifilm_timepoint_pivot = 
+  combined_petrifilm_timepoint %>%
+  pivot_wider(names_from = time, values_from = cfu_per_swab)
+
+plota <-petrifilm_data_pre %>%
+  drop_na() %>%
+  ggplot(aes(x = room_id, y = location, fill = log10(cfu_per_swab))) +
+  geom_tile(color = "white", size =0.5)  + 
+  theme_bw() +
+  labs(title = "T1 Swab Data",
+       xlab = "Room ID",
+       ylab = "Location") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+plotb <- petrifilm_data_post %>%
+  drop_na() %>%
+  ggplot(aes(x = room_id, y = location, fill = log10(cfu_per_swab))) +
+  geom_tile(color = "white", size =0.5)  + 
+  theme_bw() +
+  labs(title = "T2 Swab Data",
+       xlab = "Room ID",
+       ylab = "Location") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# load library
+library(cowplot)
+
+#set path
+folder_path <- "../products/"
+
+
+# Combine the plots using plot_grid
+combined_plot <- plot_grid(plota, plotb, ncol = 2)
+
+# Save the combined plot
+ggsave(file.path(folder_path, "combined_rym_timepoint_plot.png"), plot = combined_plot, width = 12, height = 6, dpi = 300)
+
+```
+
+###################################
+```{r}
+library(ggplot2)
+library(gridExtra)
+
+#data of swabs near start of aerosol experiments
+ddpcr_data_pre =
+  swab_data_clean %>%
+  filter(!(samp_id %in% paste0("s",13:20))) %>%
+  filter(!(room_id %in% paste0("r3"))) %>%
+  group_by(room_id) %>%
+  select(room_id,UFT_m2,location) %>%
+  drop_na() %>%
+  mutate(time = "t1" )
+
+plot1 <- ddpcr_data_pre %>%
+  ggplot(aes(x = room_id, y = location, fill = log10(UFT_m2))) +
+  geom_tile(color = "white", size =0.5)  + 
+  theme_bw() +
+  labs(title = "T1 DDPCR Data",
+       xlab = "Room ID",
+       ylab = "Location") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+#data of swabs near end of aerosol experiments
+ddpcr_data_post =
+ swab_data_clean %>%
+  filter(!(samp_id %in% paste0("s",1:8))) %>%
+  filter(!(room_id %in% paste0("r3"))) %>%
+  select(room_id,UFT_m2,location) %>%
+  drop_na() %>%
+  mutate(time = "t2" )
+plot2 <- ddpcr_data_post %>%
+  ggplot(aes(x = room_id, y = location, fill = log10(UFT_m2))) +
+  geom_tile(color = "white", size =0.5)  + 
+  theme_bw() +
+  labs(title = "T2 DDPCR Data",
+       xlab = "Room ID",
+       ylab = "Location") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+# load library
+library(cowplot)
+
+#set path
+folder_path <- "../products/"
+
+
+# Combine the plots using plot_grid
+combined_plot <- plot_grid(plot1, plot2, ncol = 2)
+
+# Save the combined plot
+ggsave(file.path(folder_path, "combined_ddpcr_timepoint_plot.png"), plot = combined_plot, width = 12, height = 6, dpi = 300)
+```
+
+
+```{r}
+#create a mass scatter plot for RYM
+filtered_data <- combined_petrifilm_timepoint %>%
+  filter(room_id == "r1")
+
+# Create scatter plot using ggplot2
+ggplot(filtered_data, aes(x = location, y = cfu_per_swab,color = time))+
+  geom_point(size = 3) +
+  labs(title = "Timepoint Representation of Room 1" , x = "Location", y = "CFU per Swab", color = "Timepoints") +
+  theme_minimal() +
+  scale_color_manual(values = c("t1" = "blue", "t2" = "red"))
+
+
+filtered_data_2 <- combined_petrifilm_timepoint %>%
+  filter(room_id == "r2")
+
+# Create scatter plot using ggplot2
+
+ggplot(filtered_data_2, aes(x = location, y = cfu_per_swab,color = time))+
+  geom_point(size = 3) +
+  labs(title = "Timepoint Representation of Room 2" , x = "Location", y = "CFU per Swab", color = "Timepoints") +
+  theme_minimal() +
+  scale_color_manual(values = c("t1" = "blue", "t2" = "red"))
+
+
+
+```
+```{r}
+library(ggbeeswarm)
+library(ggplot2)
+myplot <- combined_petrifilm_timepoint %>%
+ggplot(aes(x = room_id, y = cfu_per_swab, color = time, shape = location))+
+  geom_beeswarm(size = 3,alpha = 0.7,method = "hex", dodge.width = 0.4) +
+  labs(title = "Timepoint Representation of Rooms" , x = "Room Id", y = "CFU per Swab", color = "Timepoints", shape = "Location") +
+  theme_minimal() +
+  scale_color_manual(values = c("t1" = "blue", "t2" = "red")) +
+  scale_shape_manual(values = c("air_vent" =  16, "sink_drain" = 16, "behind_bedroom_door" = 17,   "behind_bathroom_door" = 17, "light_switch" = 17),
+                     labels = c("air_vent" = "Low-Touch", "sink_drain" = "Low-Touch", 
+                                "behind_bedroom_door" = "High-Touch", 
+                                "behind_bathroom_door" = "High-Touch", 
+                                "light_switch" = "High-Touch")) 
+
+folder_path <- "../products/"
+
+ggsave(file.path(folder_path, "beeswarm_plot.png"), plot = myplot)
+```
+
+
+
+
+
+```{r}
+library(stats)
+
+#Statistical analysis wilcox
+wilcox.test.result.table <- wilcox.test(combined_petrifilm_timepoint_pivot$t1, combined_petrifilm_timepoint_pivot$t2, paired = TRUE)
+
+library(ggplot2)
+library(gridExtra)
+library(grid)
+library(ggstatsplot)
+
+combined_petrifilm_timepoint %>%
+  ungroup() %>%
+ggbetweenstats(
+  x= time,
+  y= cfu_per_swab,
+  group = c(room_id,location))
+                       
+```
+
+##############################################################################
+
+
+                                  
+```{r}
+custom_labeller <- as_labeller(c(
+  "t1" = "Time 1",
+  "t2" = "Time 2",
+  "air_vent" = "Air Vent",
+  "sink_drain" = "Sink Drain",
+  "behind_bedroom_door" = "Behind Bedroom Door",
+  "behind_bathroom_door" = "Behind Bathroom Door",
+  "light_switch" = "Light Switch"
+))
+
+combined_petrifilm_timepoint$location <- factor(combined_petrifilm_timepoint$location, 
+                                                levels = c("air_vent", "sink_drain", 
+                                                           "behind_bedroom_door", "behind_bathroom_door", 
+                                                           "light_switch"))
+combined_petrifilm_timepoint %>%
+  drop_na() %>%
+  ggplot(aes(x = room_id, y = location, fill = log10(cfu_per_swab))) +
+  geom_tile(color = "white", size =0.5)  + 
+  theme_bw() +
+  labs(title = "T1 Swab Data",
+       xlab = "Room ID",
+       ylab = "Location") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  facet_grid(. ~ time, labeller = custom_labeller)
+
+
+
+
+# Save the combined plot
+#ggsave(file.path(folder_path, "combined_rym_timepoint_plot.png"), plot = combined_plot, width = 12, height = 6, dpi = 300)
+```
+
+

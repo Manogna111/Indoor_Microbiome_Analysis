@@ -1,0 +1,37 @@
+---
+title: "Comparing room to room DDPCR data"
+author: "Manogna"
+date: "2024-07-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#load libraries
+library(tidyverse)
+
+swab_data_clean = read.csv("./data/processed_data/swab_data_clean.csv")
+
+#create new table with location and count
+
+room_to_room_ddpcr_comp = 
+  swab_data_clean %>%
+  filter(location == "light_switch"|location == "behind_bedroom_door") %>%
+  filter(!(samp_id %in% paste0("s",13:20))) %>%
+   select(location,room_id,UFT_m2) %>%
+  filter(location == "behind_bedroom_door" | location == "light_switch")
+
+# Load necessary libraries
+library(tidyr)
+library(dplyr)
+library(broom)
+
+# Perform the Kruskal-Wallis test
+kruskal.test.result.ddpcr <- room_to_room_ddpcr_comp %>%
+  group_by(location) %>%
+  do(tidy(kruskal.test(UFT_m2 ~ room_id, data = .)))
+```
+

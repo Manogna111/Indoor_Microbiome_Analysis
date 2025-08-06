@@ -1,0 +1,144 @@
+---
+title: "the_heatmaps_timepoint"
+author: "Manogna"
+date: "2024-07-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r}
+#Load Libraries
+ 
+library(tidyverse)
+
+#load_data
+
+swab_data = read_csv("./data/processed_data/swab_data_clean.csv")
+
+```
+
+```{r}
+#data of swabs near start of aerosol experiments
+petrifilm_data_pre =
+  swab_data_clean %>%
+  filter(!(samp_id %in% paste0("s",13:20))) %>%
+  filter(!(room_id %in% paste0("r3"))) %>%
+  group_by(room_id) %>%
+  select(room_id,cfu_per_swab,location) %>%
+  drop_na() %>%
+  mutate(time = "t1" )
+
+
+#data of swabs near end of aerosol experiments
+petrifilm_data_post =
+ swab_data_clean %>%
+  filter(!(samp_id %in% paste0("s",1:8))) %>%
+  filter(!(room_id %in% paste0("r3"))) %>%
+  select(room_id,cfu_per_swab,location) %>%
+  drop_na() %>%
+  mutate(time = "t2" )
+
+
+#create a new table with only pre & post average values
+combined_petrifilm_timepoint <- bind_rows(petrifilm_data_pre, petrifilm_data_post)
+
+#create label set of list
+custom_labeller <- as_labeller(c(
+  "r1" = "Room 1",
+  "r2" = "Room 2",
+  "air_vent" = "Air Vent",
+  "sink_drain" = "Sink Drain",
+  "behind_bedroom_door" = "Behind Bedroom Door",
+  "behind_bathroom_door" = "Behind Bathroom Door",
+  "light_switch" = "Light Switch"
+))
+
+#reorder locations in table
+combined_petrifilm_timepoint$location <- factor(combined_petrifilm_timepoint$location, 
+                                                levels = c("air_vent", "sink_drain", 
+                                                           "behind_bedroom_door", "behind_bathroom_door", 
+                                                           "light_switch"))
+#make plot
+combined_plot_rym <-
+combined_petrifilm_timepoint %>%
+  drop_na() %>%
+  ggplot(aes(x = time, y = location, fill = log10(cfu_per_swab))) +
+  geom_tile(color = "white", size =0.5)  + 
+  theme_bw() +
+  labs(title = "Swab Data Across Time Points",
+       xlab = "Time",
+       ylab = "Location") +
+  theme(text = element_text(size = 20)) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  facet_grid(. ~ room_id, labeller = custom_labeller)
+
+#set path
+folder_path <- "../products/"
+#Save the combined plot
+ggsave(file.path(folder_path, "combined_rym_heatmap_plot.png"), plot = combined_plot_rym, width = 12, height = 6, dpi = 300)
+```
+
+```{r}
+#data of swabs near start of aerosol experiments
+ddpcr_data_pre =
+  swab_data_clean %>%
+  filter(!(samp_id %in% paste0("s",13:20))) %>%
+  filter(!(room_id %in% paste0("r3"))) %>%
+  group_by(room_id) %>%
+  select(room_id,UFT_m2,location) %>%
+  drop_na() %>%
+  mutate(time = "t1" )
+
+
+#data of swabs near end of aerosol experiments
+ddpcr_data_post =
+ swab_data_clean %>%
+  filter(!(samp_id %in% paste0("s",1:8))) %>%
+  filter(!(room_id %in% paste0("r3"))) %>%
+  select(room_id,UFT_m2,location) %>%
+  drop_na() %>%
+  mutate(time = "t2" )
+
+#create label set of list
+custom_labeller <- as_labeller(c(
+  "r1" = "Room 1",
+  "r2" = "Room 2",
+  "air_vent" = "Air Vent",
+  "sink_drain" = "Sink Drain",
+  "behind_bedroom_door" = "Behind Bedroom Door",
+  "behind_bathroom_door" = "Behind Bathroom Door",
+  "light_switch" = "Light Switch"
+))
+
+#create a new table with only pre & post average values
+combined_ddpcr_timepoint <- bind_rows(ddpcr_data_pre, ddpcr_data_post)
+
+
+#reorder locations in table
+combined_ddpcr_timepoint$location <- factor(combined_ddpcr_timepoint$location, 
+                                                levels = c("air_vent", "sink_drain", 
+                                                           "behind_bedroom_door", "behind_bathroom_door", 
+                                                           "light_switch"))
+#make plot
+combined_plot_ddpcr <-
+combined_ddpcr_timepoint %>%
+  drop_na() %>%
+  ggplot(aes(x = time, y = location, fill = log10(UFT_m2))) +
+  geom_tile(color = "white", size =0.5)  + 
+  theme_bw() +
+  labs(title = "DDPCR Data Across Time Points",
+       xlab = "Time",
+       ylab = "Location") +
+  theme(text = element_text(size = 20)) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  facet_grid(. ~ room_id, labeller = custom_labeller)
+
+#Save the combined plot
+ggsave(file.path(folder_path, "combined_ddpcr_heatmap_plot.png"), plot = combined_plot_ddpcr, width = 12, height = 6, dpi = 300)
+```
+
+

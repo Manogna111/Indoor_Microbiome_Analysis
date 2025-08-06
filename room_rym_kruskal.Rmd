@@ -1,0 +1,36 @@
+---
+title: "Comparing the room to room CFU RYM data"
+author: "Manogna"
+date: "2024-07-12"
+output: html_document
+---
+
+```{r}
+#Load Libraries
+ 
+library(tidyverse)
+
+#load data
+
+swab_data_clean = read.csv("./data/processed_data/swab_data_clean.csv")
+
+#create new table with location and count
+
+room_to_room_rym_comp = 
+  swab_data_clean %>%
+  filter(location == "light_switch"|location == "behind_bedroom_door") %>%
+  filter(!(samp_id %in% paste0("s",13:20))) %>%
+   select(location,room_id,cfu_per_swab) %>%
+  filter(location == "behind_bedroom_door" | location == "light_switch")
+
+# Load necessary libraries
+library(tidyr)
+library(dplyr)
+library(broom)
+
+# Perform the Kruskal-Wallis test
+kruskal.test.result.rym <- room_to_room__rym_comp %>%
+  group_by(location) %>%
+  do(tidy(kruskal.test(cfu_per_swab ~ room_id, data = .)))
+```
+
