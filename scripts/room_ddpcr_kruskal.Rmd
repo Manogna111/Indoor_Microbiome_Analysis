@@ -10,28 +10,30 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-#load libraries
-library(tidyverse)
+# Load required libraries
+library(tidyverse)  # Loads ggplot2, dplyr, tidyr, readr, etc.
 
+# Read in the cleaned swab data from CSV file
 swab_data_clean = read.csv("./data/processed_data/swab_data_clean.csv")
 
-#create new table with location and count
-
+# Create a filtered table comparing specific locations and sample counts
 room_to_room_ddpcr_comp = 
   swab_data_clean %>%
-  filter(location == "light_switch"|location == "behind_bedroom_door") %>%
-  filter(!(samp_id %in% paste0("s",13:20))) %>%
-   select(location,room_id,UFT_m2) %>%
-  filter(location == "behind_bedroom_door" | location == "light_switch")
+  filter(location == "light_switch" | location == "behind_bedroom_door") %>%  # Keep only these two locations
+  filter(!(samp_id %in% paste0("s",13:20))) %>%  # Exclude sample IDs s13 to s20
+  select(location, room_id, UFT_m2) %>%          # Select only relevant columns
+  filter(location == "behind_bedroom_door" | location == "light_switch")  # Redundant filter, can be removed
 
-# Load necessary libraries
-library(tidyr)
-library(dplyr)
-library(broom)
+# Load additional libraries
+library(tidyr)  # Tools for reshaping data
+library(dplyr)  # Tools for data manipulation
+library(broom)  # Converts statistical analysis objects into tidy tibbles
 
-# Perform the Kruskal-Wallis test
+# Perform Kruskal-Wallis test on ddPCR data by room, grouped by location
 kruskal.test.result.ddpcr <- room_to_room_ddpcr_comp %>%
-  group_by(location) %>%
-  do(tidy(kruskal.test(UFT_m2 ~ room_id, data = .)))
+  group_by(location) %>%  # Group data by location
+  do(tidy(kruskal.test(UFT_m2 ~ room_id, data = .)))  # Run Kruskal-Wallis test and tidy the result
+
 ```
+
 
