@@ -16,9 +16,7 @@ library(tidyverse)  # Includes ggplot2, dplyr, tidyr, readr, and more for data m
 
 # Load cleaned swab data from CSV
 swab_data = read_csv("./data/processed_data/swab_data_clean.csv")
-{r}
-Copy
-Edit
+
 # Filter swab data collected *before* the aerosol experiments
 petrifilm_data_pre =
   swab_data_clean %>%  # Use cleaned dataset
@@ -28,9 +26,7 @@ petrifilm_data_pre =
   select(room_id, cfu_per_swab, location) %>%    # Select necessary columns
   drop_na() %>%                                  # Remove missing values
   mutate(time = "t1" )                           # Label as pre-experiment timepoint
-r
-Copy
-Edit
+
 # Filter swab data collected *after* the aerosol experiments
 petrifilm_data_post =
  swab_data_clean %>%
@@ -39,9 +35,7 @@ petrifilm_data_post =
   select(room_id, cfu_per_swab, location) %>%     # Select relevant columns
   drop_na() %>%                                   # Remove missing values
   mutate(time = "t2" )                            # Label as post-experiment timepoint
-r
-Copy
-Edit
+
 # Combine pre and post data into a single dataframe
 combined_petrifilm_timepoint <- bind_rows(petrifilm_data_pre, petrifilm_data_post)
 
@@ -82,9 +76,7 @@ folder_path <- "../products/"
 # Save heatmap of swab data as a PNG
 ggsave(file.path(folder_path, "combined_rym_heatmap_plot.png"), 
        plot = combined_plot_rym, width = 12, height = 6, dpi = 300)
-{r}
-Copy
-Edit
+
 # Filter ddPCR data collected *before* aerosol experiments
 ddpcr_data_pre =
   swab_data_clean %>%
@@ -94,9 +86,7 @@ ddpcr_data_pre =
   select(room_id, UFT_m2, location) %>%          # Select columns relevant to ddPCR
   drop_na() %>%                                  # Remove missing values
   mutate(time = "t1" )                           # Label as pre-experiment
-r
-Copy
-Edit
+
 # Filter ddPCR data collected *after* aerosol experiments
 ddpcr_data_post =
  swab_data_clean %>%
@@ -105,9 +95,7 @@ ddpcr_data_post =
   select(room_id, UFT_m2, location) %>%          # Select relevant columns
   drop_na() %>%                                  # Remove NAs
   mutate(time = "t2" )                           # Label as post-experiment
-r
-Copy
-Edit
+
 # Create custom labels for rooms and locations again (optional reuse)
 custom_labeller <- as_labeller(c(
   "r1" = "Room 1",
@@ -146,6 +134,7 @@ combined_plot_ddpcr <-
 ggsave(file.path(folder_path, "combined_ddpcr_heatmap_plot.png"), 
        plot = combined_plot_ddpcr, width = 12, height = 6, dpi = 300)
 ```
+
 
 
 
