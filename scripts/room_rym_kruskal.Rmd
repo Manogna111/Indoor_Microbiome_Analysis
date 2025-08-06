@@ -6,31 +6,30 @@ output: html_document
 ---
 
 ```{r}
-#Load Libraries
- 
-library(tidyverse)
+# Load required libraries
+library(tidyverse)  # Includes dplyr, ggplot2, readr, etc.
 
-#load data
-
+# Load the cleaned swab data from a CSV file
 swab_data_clean = read.csv("./data/processed_data/swab_data_clean.csv")
 
-#create new table with location and count
-
+# Create a filtered dataset with only relevant locations and sample IDs
 room_to_room_rym_comp = 
   swab_data_clean %>%
-  filter(location == "light_switch"|location == "behind_bedroom_door") %>%
-  filter(!(samp_id %in% paste0("s",13:20))) %>%
-   select(location,room_id,cfu_per_swab) %>%
-  filter(location == "behind_bedroom_door" | location == "light_switch")
+  filter(location == "light_switch" | location == "behind_bedroom_door") %>%  # Keep only samples from two locations
+  filter(!(samp_id %in% paste0("s", 13:20))) %>%  # Exclude sample IDs from s13 to s20
+  select(location, room_id, cfu_per_swab) %>%     # Select only needed columns
+  filter(location == "behind_bedroom_door" | location == "light_switch")  # Redundant, but keeps the logic explicit
 
-# Load necessary libraries
+# Load additional libraries for tidying and analysis (already loaded with tidyverse, but okay to repeat for clarity)
 library(tidyr)
 library(dplyr)
-library(broom)
+library(broom)  # Used to tidy model outputs like kruskal.test results
 
-# Perform the Kruskal-Wallis test
-kruskal.test.result.rym <- room_to_room__rym_comp %>%
-  group_by(location) %>%
-  do(tidy(kruskal.test(cfu_per_swab ~ room_id, data = .)))
+# Perform Kruskal-Wallis test grouped by location
+kruskal.test.result.rym <- room_to_room_rym_comp %>%
+  group_by(location) %>%  # Group data by location
+  do(tidy(kruskal.test(cfu_per_swab ~ room_id, data = .)))  # Perform Kruskal-Wallis test and convert results to a tidy tibble
+
 ```
+
 
