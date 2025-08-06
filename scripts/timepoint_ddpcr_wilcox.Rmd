@@ -5,63 +5,65 @@ date: "2024-07-12"
 output: html_document
 ---
 ```{r}
-#Load Libraries
- 
-library(tidyverse)
+# Load required libraries
+library(tidyverse)  # Loads essential packages for data manipulation and visualization (dplyr, ggplot2, readr, etc.)
 
-#load_data
-
+# Load cleaned swab data from CSV file
 swab_data_clean = read_csv("./data/processed_data/swab_data_clean.csv")
-```
 
-```{r}
-#DDPCR data of swabs near start of aerosol experiments
+# Extract ddPCR data collected before the aerosol experiments
 ddpcr_data_pre =
   swab_data_clean %>%
-  filter(!(samp_id %in% paste0("s",13:20))) %>%
-  filter(!(room_id %in% paste0("r3"))) %>%
-  group_by(room_id) %>%
-  select(room_id,UFT_m2,location) %>%
-  drop_na() %>%
-  mutate(time = "t1" )
+  filter(!(samp_id %in% paste0("s",13:20))) %>%  # Exclude samples s13 to s20 (post-experiment)
+  filter(!(room_id %in% paste0("r3"))) %>%       # Exclude Room 3
+  group_by(room_id) %>%                          # Group by room ID
+  select(room_id, UFT_m2, location) %>%          # Keep only relevant columns
+  drop_na() %>%                                  # Remove rows with missing data
+  mutate(time = "t1" )                           # Label the timepoint as pre-experiment ("t1")
 
-
-#data of swabs near end of aerosol experiments
+# Extract ddPCR data collected after the aerosol experiments
 ddpcr_data_post =
- swab_data_clean %>%
-  filter(!(samp_id %in% paste0("s",1:8))) %>%
-  filter(!(room_id %in% paste0("r3"))) %>%
-  select(room_id,UFT_m2,location) %>%
-  drop_na() %>%
-  mutate(time = "t2" )
+  swab_data_clean %>%
+  filter(!(samp_id %in% paste0("s",1:8))) %>%     # Exclude samples s1 to s8 (pre-experiment)
+  filter(!(room_id %in% paste0("r3"))) %>%        # Exclude Room 3
+  select(room_id, UFT_m2, location) %>%           # Keep relevant columns
+  drop_na() %>%                                   # Remove missing values
+  mutate(time = "t2" )                            # Label the timepoint as post-experiment ("t2")
 
-
-#create a new table with only pre & post values
+# Combine both pre- and post-experiment datasets into one table
 combined_ddpcr_timepoint <- bind_rows(ddpcr_data_pre, ddpcr_data_post)
 
-#pivot longer
+# Reshape data: make one row per sample with both timepoints as separate columns
 combined_ddpcr_timepoint_pivot = 
   combined_ddpcr_timepoint %>%
-  pivot_wider(names_from = time, values_from = UFT_m2)
+  pivot_wider(names_from = time, values_from = UFT_m2)  # Convert 'time' values (t1, t2) to column headers
 
+# Load base R stats package for non-parametric testing
 library(stats)
 
-#Statistical analysis wilcox
-wilcox.test.result.table <- wilcox.test(combined_ddpcr_timepoint_pivot$t1, combined_ddpcr_timepoint_pivot$t2, paired = TRUE)
+# Perform paired Wilcoxon signed-rank test between pre- and post- ddPCR measurements
+wilcox.test.result.table <- wilcox.test(
+  combined_ddpcr_timepoint_pivot$t1,  # Pre-experiment UFT_m2 values
+  combined_ddpcr_timepoint_pivot$t2,  # Post-experiment UFT_m2 values
+  paired = TRUE                       # Use paired test since measurements are matched by sample
+)
 
-library(ggplot2)
-library(gridExtra)
-library(grid)
-library(ggstatsplot)
+# Load visualization libraries
+library(ggplot2)      # For base plotting
+library(gridExtra)    # For arranging multiple plots
+library(grid)         # For fine-grained control of grid graphics
+library(ggstatsplot)  # For statistical plotting with in-built significance testing
 
+# Create a between-group plot with statistical results included
 combined_ddpcr_timepoint %>%
-  ungroup() %>%
-ggbetweenstats(
-  x= time,
-  y= UFT_m2,
-  group = c(room_id,location))
-                       
+  ungroup() %>%  # Remove grouping to avoid issues during plotting
+  ggbetweenstats(
+    x = time,         # X-axis: timepoint (t1 or t2)
+    y = UFT_m2,       # Y-axis: ddPCR measurement
+    group = c(room_id, location)  # Grouping factor for comparisons
+  )
 ```
 
 ```
+
 
