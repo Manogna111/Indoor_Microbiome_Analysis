@@ -1,47 +1,62 @@
-Indoor Microbiome Analysis – Human Disturbance Effects
-Overview
-Humans spend ~90% of their time indoors, making it crucial to understand how built environments influence microbiomes. This project analyzes the microbial state of an unoccupied house and investigates whether minimal human disturbance affects yeast and mold populations.
+# Indoor Microbiome Analysis – Human Disturbance Effects
 
-Purpose
-To determine whether standardized swabbing procedures and light human activity influence microbial growth in a controlled indoor environment.
+## 🧬 Overview
 
-Methodology
-Location: Unoccupied residential house
+Humans spend approximately 90% of their time indoors, making it essential to understand how built environments affect microbial communities.  
+This project analyzes the microbiome of an unoccupied house and investigates whether minimal human disturbance influences yeast and mold populations.
 
-Sampling:
+---
 
-Swabs taken from consistent indoor surfaces over 3 days
+## 🎯 Purpose
 
-Samples stored in PBS (Phosphate Buffered Saline)
+To determine if standardized swabbing procedures and minimal human activity impact microbial growth in a controlled indoor environment.
 
-Analysis:
+---
 
-Cultured on Petri films to assess yeast and mold growth
+## 🔬 Methodology
 
-Quantified and statistically analyzed using R
+- **Location**: Unoccupied residential house  
+- **Sampling Procedure**:
+  - Swabs collected from consistent surface locations over 3 consecutive days
+  - Samples placed into PBS (Phosphate Buffered Saline) solution
+- **Analysis**:
+  - Cultured on Petri films to assess yeast and mold presence
+  - Data analyzed statistically using **R**
 
-Key Findings
-No statistically significant difference in microbiome due to brief human presence.
+---
 
-Swabbing method proves reliable for built environment sampling.
+## 📊 Key Findings
 
-Reinforces the need for standardized protocols in microbiome research.
+- No statistically significant effect from brief human presence
+- Swabbing method is reliable and consistent
+- Highlights the importance of standardized microbiome sampling protocols
 
-Tools & Technologies
-Swabbing protocol by Noble Lab and REU students
+---
 
-Petri film microbial growth analysis
+## 🛠️ Tools & Technologies
 
-Statistical analysis in R
+- Standardized swabbing protocol (Noble Lab & REU students)
+- Petri film microbial growth analysis
+- R programming language for statistical analysis
 
-Repository Contents
-data/: Raw and processed microbiome data
+---
 
-scripts/: R scripts used for analysis
+## 📁 Repository Structure
+- data/ # Raw and processed microbiome data
+- scripts/ # R scripts for analysis
+- figures/ # Charts and plots of results
+- docs/ # Project documentation and references
 
-figures/: Visualizations of microbial growth results
+---
 
-docs/: Project writeup and references
+## 📌 Citation
 
-Citation
-If you use this project or method in your work, please cite the Noble Lab and this repository.
+If you use this project or method in your research, please credit the Noble Lab and cite this repository.
+
+---
+
+## 📬 Contact
+
+For questions or collaboration inquiries, feel free to open an [issue](https://github.com/yourusername/your-repo/issues) or contact the project maintainers.
+
+
